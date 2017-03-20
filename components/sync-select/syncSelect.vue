@@ -1,17 +1,109 @@
 <template>
-    <i-select :model.sync="model1" query-mode="server1" @on-change="hello" @on-query-change="queryChange"
-              @on-query="queryTest" filterable clearable>
-        <i-option v-for="item in tableData1" :value="item.name">{{ item.name }}</i-option>
-        <div v-if="tableData1.length == 0">暂无数据</div>
-        <div class="loading"></div>
-        <div slot="page" v-if="tableData1.length > 0">
-            <Page :total="400" size="small" @on-change="changePage" simple></Page>
+    <i-select :model.sync="value" query-mode="server1" size="small" @on-query="doQuery" filterable clearable>
+        <i-option v-for="item in items" :value="item[valueMember]">{{ item[displayMember] }}</i-option>
+        <div v-if="items.length == 0 && !loading">暂无数据</div>
+        <div class="loading" v-if="loading"></div>
+        <div slot="page" v-if="showPagination">
+            <Page :total="totalSize" :page-size="pageSize" :current="current" size="small" @on-change="changePage"
+                  simple></Page>
         </div>
     </i-select>
 </template>
 <script>
+    /**
+     * @example
+     *  <sync-select url="/wec-devops-tenant/tenantApp/getAppListByTenant" display-member="appName" value-member="appId" :page-size="4" :value="value" :value-display="valueDisplay" :params="params"></sync-select>
+     */
     export default {
+        props: {
+            url: String,
+            value: {
+                type: String,
+                default: '',
+            },
+            displayMember: {
+                type: String,
+                default: 'name'
+            },
+            valueMember: {
+                type: String,
+                default: 'id'
+            },
+            pageSize: {
+                type: Number,
+                default: 10
+            },
 
+            valueDisplay:String,
+
+            params: Object
+        },
+
+        computed: {
+            showPagination(){
+                var show = false
+
+                if (this.items.length > 0 && this.totalSize > this.pageSize) {
+                    show = true
+                }
+
+                return show
+            }
+        },
+
+        ready(){
+            if(this.valueDisplay){
+                var selected = {}
+                selected[this.displayMember] = this.valueDisplay
+                selected[this.valueMember] = this.value
+                this.items = [selected]
+            }else{
+                this.__fetchData()
+            }
+        },
+
+        data: function () {
+            return {
+                loading: false,
+                items: [],
+                totalSize: 0,
+                current: 1,
+                searchContent: ''
+            }
+        },
+
+        methods: {
+            __fetchData(){
+                fetch(this.url, {
+                    method: "POST",
+                    body: JSON.stringify(Object.assign({}, {
+                        "searchContent": this.searchContent,
+                        "pageSize": this.pageSize,
+                        "pageNumber": this.current
+                    },this.params)),
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                }).then(function (response) {
+                    return response.json()
+                }).then((res) => {
+                    this.totalSize = res.datas.totalSize
+                    this.items = res.datas.rows
+                })
+            },
+
+            doQuery(searchContent){
+                this.current = 1
+                this.value = ''
+                this.searchContent = searchContent
+                this.__fetchData()
+            },
+
+            changePage(pageNumber){
+                this.current = pageNumber
+                this.__fetchData()
+            }
+        }
     }
 </script>
 <style scoped>
