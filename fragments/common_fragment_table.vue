@@ -1,7 +1,7 @@
 <template>
     <div>
         <i-table :content="options.self" :data="options.tableData" :columns="options.tableColumns" stripe
-                 border @on-select="rowSelect"></i-table>
+                 border @on-select="rowSelect" @on-selection-change="selectAll"></i-table>
         <div style="margin: 10px;overflow: hidden" v-if="options.pageable !== false">
             <div style="float: right;">
                 <Page :total="total" :current="pageNumber" @on-change="onChange"
@@ -43,8 +43,8 @@
             }
         },
 
-        created(){
-            this.$emit('on-created')
+        ready(){
+            this.$emit('on-ready')
             if (this.options.url) {
                 this._reload()
             }
@@ -66,6 +66,11 @@
                 this._reload()
             },
 
+            reloadFirstPage(){
+                this.pageNumber = 1
+                this.reload()
+            },
+
             onChange(pageNumber){
                 this.pageNumber = pageNumber
                 this.$emit('on-page-change')
@@ -84,6 +89,10 @@
 
             rowSelect(data){
                 this.$emit('on-select', data)
+            },
+
+            selectAll(){
+                this.$emit('on-selection-change', ...arguments)
             }
         }
     }
