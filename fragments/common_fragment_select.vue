@@ -3,7 +3,7 @@
         <Row>
             <div class="label">{{options.label}}：</div>
             <div class="content">
-                <i-select :model.sync="options.value" style="width:200px" @on-change="$emit('on-change')">
+                <i-select :model.sync="options.value" style="width:200px" @on-change="change">
                     <i-option v-for="item in options.list" :value="item[options.valueMember || 'value']">{{
                         item[options.displayMember || 'name'] }}
                     </i-option>
@@ -29,6 +29,11 @@
     export default {
         mixins: [fragmentMixin],
         mock: mockData(),
+        methods:{
+            change(){
+                this.$emit('on-change', this.options.value)
+            }
+        }
     }
 
     function mockData() {
