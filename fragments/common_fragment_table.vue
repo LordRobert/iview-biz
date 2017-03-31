@@ -5,7 +5,7 @@
         <div style="margin: 10px;overflow: hidden" v-if="options.pageable !== false">
             <div style="float: right;">
                 <Page :total="total" :current="pageNumber" @on-change="onChange"
-                      @on-page-size-change="onPageSizeChange" show-sizer :page-size="pageSize"></Page>
+                      @on-page-size-change="onPageSizeChange" show-sizer :page-size="pageSize" :page-size-opts="options.pageSizeOpts || [10, 20, 30, 40]"></Page>
             </div>
         </div>
     </div>
@@ -18,6 +18,7 @@
      *    tableColumns 表格meata
      *    pageable 是否有分页
      *    url 请求数据url
+     *    pageSizeOpts 每页条数切换的配置
      *
      *
      * @events
