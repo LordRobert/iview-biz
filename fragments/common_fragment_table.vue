@@ -1,7 +1,7 @@
 <template>
     <div>
         <i-table :content="options.self" :data="options.tableData" :columns="options.tableColumns" stripe
-                 border @on-select="rowSelect" @on-selection-change="selectAll"></i-table>
+                 border @on-select="rowSelect" @on-selection-change="selectAll" :header-height="options.headerHeight"></i-table>
         <div style="margin: 10px;overflow: hidden" v-if="options.pageable !== false">
             <div style="float: right;">
                 <Page :total="total" :current="pageNumber" @on-change="onChange"
@@ -19,6 +19,7 @@
      *    pageable 是否有分页
      *    url 请求数据url
      *    pageSizeOpts 每页条数切换的配置
+     *    headerHeight 设置header高度
      *
      *
      * @events
