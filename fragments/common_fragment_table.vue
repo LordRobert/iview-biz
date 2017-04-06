@@ -5,7 +5,7 @@
         <div style="margin: 10px;overflow: hidden" v-if="options.pageable !== false">
             <div style="float: right;">
                 <Page :total="total" :current="pageNumber" @on-change="onChange"
-                      @on-page-size-change="onPageSizeChange" show-sizer :page-size="pageSize" :page-size-opts="options.pageSizeOpts || [10, 20, 30, 40]"></Page>
+                      @on-page-size-change="onPageSizeChange" :show-sizer="options.showSizer!==false" :page-size="pageSize" :page-size-opts="options.pageSizeOpts || [10, 20, 30, 40]" :show-elevator="options.showElevator!==false" :show-total="options.showTotal!==false"></Page>
             </div>
         </div>
     </div>
@@ -20,6 +20,9 @@
      *    url 请求数据url
      *    pageSizeOpts 每页条数切换的配置
      *    headerHeight 设置header高度
+     *    showElevator 是否显示跳转至 默认显示
+     *    showTotal 是否显示总条数
+     *    showSizer 是否展示分页条数
      *
      *
      * @events
