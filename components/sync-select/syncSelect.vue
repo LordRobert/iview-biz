@@ -75,6 +75,7 @@
         methods: {
             __fetchData(){
                 fetch(this.url, {
+                    credentials: 'include',
                     method: "POST",
                     body: JSON.stringify(Object.assign({}, {
                         "searchContent": this.searchContent,
