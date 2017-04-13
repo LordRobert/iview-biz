@@ -1,10 +1,11 @@
 <template>
-    <i-select :model.sync="value" query-mode="server1" size="small" @on-query="doQuery" filterable clearable>
-        <i-option v-for="item in items" :value="item[valueMember]">{{ item[displayMember] }}</i-option>
+    <i-select :model.sync="value" query-mode="server1" @on-query="doQuery" filterable clearable v-ref:select>
+        <i-option v-for="item in items" :value="item[valueMember]" @click="_select(item)">{{ item[displayMember] }}
+        </i-option>
         <div v-if="items.length == 0 && !loading">暂无数据</div>
         <div class="loading" v-if="loading"></div>
-        <div slot="page" v-if="showPagination">
-            <Page :total="totalSize" :page-size="pageSize" :current="current" size="small" @on-change="changePage"
+        <div slot="page" v-if="showPagination && pageable">
+            <Page :total="totalSize" :page-size="pageSize" :current="current" size="small" @on-change="_changePage"
                   simple></Page>
         </div>
     </i-select>
@@ -18,7 +19,7 @@
         props: {
             url: String,
             value: {
-                type: String,
+                type: [String, Number, Boolean],
                 default: '',
             },
             displayMember: {
@@ -27,16 +28,27 @@
             },
             valueMember: {
                 type: String,
-                default: 'id'
+                default: 'code'
             },
             pageSize: {
                 type: Number,
                 default: 10
             },
 
-            valueDisplay:String,
+            pageable: {
+                type: Boolean,
+                default: true
+            },
+
+            valueDisplay: String,
 
             params: Object
+        },
+
+        data: function () {
+            return {
+                hasReady: false
+            }
         },
 
         computed: {
@@ -51,13 +63,28 @@
             }
         },
 
+        watch: {
+            value: function (newVal) {
+                if (newVal == '') {
+                    this.valueDisplay = ''
+                    this.$refs.select.query = ''
+                }
+            },
+            'params': function () {
+                if (this.hasReady) {
+                    this.__fetchData()
+                }
+            }
+        },
+
         ready(){
-            if(this.valueDisplay){
+            this.hasReady = true
+            if (this.valueDisplay) {
                 var selected = {}
                 selected[this.displayMember] = this.valueDisplay
                 selected[this.valueMember] = this.value
                 this.items = [selected]
-            }else{
+            } else {
                 this.__fetchData()
             }
         },
@@ -73,21 +100,16 @@
         },
 
         methods: {
+            reload(){
+                this.__fetchData()
+            },
+
             __fetchData(){
-                fetch(this.url, {
-                    credentials: 'include',
-                    method: "POST",
-                    body: JSON.stringify(Object.assign({}, {
-                        "searchContent": this.searchContent,
-                        "pageSize": this.pageSize,
-                        "pageNumber": this.current
-                    },this.params)),
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                }).then(function (response) {
-                    return response.json()
-                }).then((res) => {
+                Utils.post(this.url, Object.assign({}, {
+                    "searchContent": this.searchContent,
+                    "pageSize": this.pageSize,
+                    "pageNumber": this.current
+                }, this.params)).then((res) => {
                     this.totalSize = res.datas.totalSize
                     this.items = res.datas.rows
                 })
@@ -100,9 +122,13 @@
                 this.__fetchData()
             },
 
-            changePage(pageNumber){
+            _changePage(pageNumber){
                 this.current = pageNumber
                 this.__fetchData()
+            },
+
+            _select(item){
+                this.valueDisplay = item[this.displayMember]
             }
         }
     }
