@@ -1,5 +1,5 @@
 <template>
-    <i-select :model.sync="value" query-mode="server1" @on-query="doQuery" filterable clearable v-ref:select>
+    <i-select :model.sync="value" query-mode="server1" @on-query="doQuery" :filterable="!disabled" clearable v-ref:select :disabled="disabled">
         <i-option v-for="item in items" :value="item[valueMember]" @click="_select(item)">{{ item[displayMember] }}
         </i-option>
         <div v-if="items.length == 0 && !loading">暂无数据</div>
@@ -22,6 +22,10 @@
                 type: [String, Number, Boolean],
                 default: '',
             },
+            disabled: {
+                type: Boolean,
+                default: false
+            },
             displayMember: {
                 type: String,
                 default: 'name'
@@ -39,6 +43,8 @@
                 type: Boolean,
                 default: true
             },
+
+            currentMember: Object,
 
             valueDisplay: String,
 
@@ -128,6 +134,7 @@
             },
 
             _select(item){
+                this.currentMember = item
                 this.valueDisplay = item[this.displayMember]
             }
         }
