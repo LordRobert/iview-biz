@@ -1,8 +1,8 @@
 <template>
   <div>
-    <Tabs :active-key="options.activeIndex" :animated="options.animated">
-      <Tab-pane :label="item.title" v-for="item in innerTabs">
-        <component :is="item.component" :options="item.options" :events="item.events"></component>
+    <Tabs :active-key="options.activeIndex" :animated="options.animated" @on-click="select">
+      <Tab-pane :label="item.title" v-for="item in options.tabs">
+        <component :is="item._component" :options="item.options" :events="item.events"></component>
       </Tab-pane>
     </Tabs>
   </div>
@@ -18,17 +18,27 @@
   import fragmentMixin from 'iview-biz/mixins/fragmentMixin'
   export default {
     mixins: [fragmentMixin],
-    computed:{
-      current:function () {
+    computed: {
+      current: function () {
         return this.options.tabs[this.options.activeIndex || 0].key
       },
+    },
 
-      innerTabs:function () {
-        this.options.tabs.forEach(function (item) {
-          item.key = item.component
-        })
+    ready(){
+      this.options.tabs.forEach((item, index) => {
+        this.$set('options.tabs['+index+']._component', '')
+      })
+      this._showTab(this.options.activeIndex || 0)
+    },
 
-        return this.options.tabs
+    methods: {
+      select(item){
+        this._showTab(item)
+      },
+
+      _showTab(index){
+        debugger
+        this.options.tabs[index]._component = this.options.tabs[index].component
       }
     }
   }
