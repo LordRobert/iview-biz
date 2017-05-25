@@ -37,7 +37,6 @@
       },
 
       _showTab(index){
-        debugger
         this.options.tabs[index]._component = this.options.tabs[index].component
       }
     }
