@@ -8,7 +8,7 @@
         <Page :total="total" :current="pageNumber" @on-change="onChange"
               @on-page-size-change="onPageSizeChange" :show-sizer="options.showSizer!==false"
               :page-size="pageSize" :page-size-opts="options.pageSizeOpts || [10, 20, 30, 40]"
-              :show-elevator="options.showElevator!==false" :show-total="options.showTotal!==false"></Page>
+              :show-elevator="options.showElevator!==false" :show-total="options.showTotal!==false" :simple="options.simple"></Page>
       </div>
     </div>
   </div>
@@ -26,6 +26,7 @@
    *    showElevator 是否显示跳转至 默认显示
    *    showTotal 是否显示总条数
    *    showSizer 是否展示分页条数
+   *    simple 简洁版
    *    manualLoadData 是否手动获取数据 此时表格初始化时不执行ajax获取数据
    *
    *
