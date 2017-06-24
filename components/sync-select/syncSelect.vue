@@ -45,6 +45,11 @@
         default: true
       },
 
+      searchKey:{
+        type:String,
+        default:'searchContent'
+      },
+
       currentMember: Object,
 
       valueDisplay: String,
@@ -107,11 +112,13 @@
       },
 
       __fetchData(){
+        var searchContent = {}
+        searchContent[this.searchKey] = this.searchContent
+
         Utils.post(this.url, Object.assign({}, {
-          "searchContent": this.searchContent,
           "pageSize": this.pageSize,
           "pageNumber": this.current
-        }, this.params)).then((res) => {
+        }, this.params, searchContent)).then((res) => {
           this.totalSize = res.datas.totalSize
           this.items = res.datas.rows
         })
