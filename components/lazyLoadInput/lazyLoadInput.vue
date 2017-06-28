@@ -2,7 +2,7 @@
   <div class="lazy-input-container" @keydown.40="_hoverNextItem" @keydown.38="_hoverPrevItem"
        @mouseenter="_mouseEnter"
        , @mouseleave="_mouseLeave" @keydown.enter="_enter">
-    <input type="text" class="ivu-input" :placeholder="options.placeholder" @click="_inputFocus"
+    <input type="text" class="ivu-input" :placeholder="placeholder" @click="_inputFocus"
            v-model="searchContent" debounce="300" @keydown="keydown" :disabled="disabled"/>
     <div class="lazy-input-list" v-if="expand">
       <div class="lazy-input-loading" v-if="loading && rows.length == 0"></div>
@@ -21,34 +21,88 @@
 <script type="text/ecmascript-6">
   var ROW_HEIGHT = 28
   var PAGE_SIZE = 9
-  var defaultOptions = {
-    root: 'datas>rows',
-    totalRoot: 'datas>totalSize',
-    displayMember: 'name',
-    valueMember: 'id',
-    searchKey: 'queryopt'
-  }
+
   /***
-   * @property {Object} options 初始化参数
-   * @property {String} options.url 请求数据url
-   * @property {String} [options.displayMember=name] displayMember
-   * @property {String} [options.valueMember=id] valueMember
-   * @property {String} [options.params] params
-   * @property {String} [options.root=datas>rows] root
-   * @property {String} [options.totalRoot=datas>totalSize] totalRoot
-   * @property {Function} [options.rowRender(row)] 自定义行渲染函数
-   * @property {Function} [options.afterSelect(row)] 选中后执行的回调
+   * @property {String} url 请求数据url
+   * @property {String} value 值
+   * @property {String} valueDisplay 显示值
+   * @property {String} [displayMember=name] displayMember
+   * @property {String} [valueMember=id] valueMember
+   * @property {String} [params] params
+   * @property {String} [disabled] 设置禁用状态
+   * @property {String} [searchKey] 搜索时传递的关键字字段名称
+   * @property {String} [placeholder] placeholder
+   * @property {String} [root=datas>rows] root
+   * @property {String} [totalRoot=datas>totalSize] totalRoot
+   * @property {Function} [rowRender(row)] 自定义行渲染函数
+   * @property {Function} [afterSelect(row)] 选中后执行的回调
+   * @property {Function} [afterAjax(res)] ajax返回后执行的回调
    */
   export default {
     props: {
-      options: {
+      url:{
+        type:String
+      },
+
+      root: {
+        type: String,
+        default: 'datas>rows'
+      },
+
+      totalRoot: {
+        type: String,
+        default: 'datas>totalSize'
+      },
+
+      value: {
+        type: String
+      },
+
+      valueDisplay: {
+        type: String
+      },
+
+      displayMember: {
+        type: String,
+        default: 'name'
+      },
+
+      valueMember: {
+        type: String,
+        default: 'id'
+      },
+
+      disabled: {
+        type: Boolean,
+        default: false
+      },
+
+      placeholder: {
+        type: String
+      },
+
+      searchKey: {
+        type: String,
+        default: 'content'
+      },
+
+      afterAjax: {
+        type: Function
+      },
+
+      afterSelect: {
+        type: Function
+      },
+
+      rowRender:{
+        type:Function
+      },
+
+      params: {
         type: Object,
         default: function () {
           return {}
         }
-      },
-      current: {
-        type: Object
       }
     },
     data: function () {
@@ -60,14 +114,9 @@
         loading: false,
         hoverItem: null,
         rows: [],
+        current: {},
         searchContent: '',
-        disabled: false,
-        noMore:false
-      }
-    },
-    computed: {
-      inputDisabled: function () {
-        return this.disabled ? 'disabled' : ''
+        noMore: false
       }
     },
     ready(){
@@ -77,6 +126,14 @@
           this.expand = false
         }
       })
+
+      // 如果初始化时有传值 则赋值给current对象
+      if (this.valueDisplay) {
+        this.current = {}
+        this.current[this.valueMember] = this.value
+        this.current[this.displayMember] = this.valueDisplay
+      }
+
       this._load()
     },
     watch: {
@@ -93,16 +150,31 @@
           })
         }
       },
+
       current: function (newVal) {
         this._searchContentChangeFromInner = true
         if (newVal) {
-          this.searchContent = newVal[this._options.displayMember]
+          // 当current改变时，同时改变value和valueDisplay
+          this.searchContent = newVal[this.displayMember]
+          this.value = newVal[this.valueMember]
+          this.valueDisplay = newVal[this.displayMember]
         }
       },
+
       searchContent: function (newVal) {
         if (this._searchContentChangeFromInner) {
           this._searchContentChangeFromInner = false
           return
+        }
+
+        if (!newVal) {
+          let emptyValue = {}
+
+          emptyValue[this.valueMember] = ''
+          emptyValue[this.displayMember] = ''
+
+          this.current = emptyValue
+          this.$emit('on-select', emptyValue)
         }
         this.index = 0
         this.expand = true
@@ -113,12 +185,7 @@
         this._load()
       }
     },
-    computed: {
-      // 组件中真实使用的配置项
-      _options: function () {
-        return Object.assign({}, defaultOptions, this.options)
-      }
-    },
+
     methods: {
       getValue(){
         return this.current
@@ -132,22 +199,27 @@
       setEnable(){
         this.disabled = false
       },
+      reload(){
+        this.pageNumber = 0
+        this.rows = []
+        this._load()
+      },
       _load(){
-        if(this.noMore){
+        if (this.noMore) {
           return
         }
-        var params = $.extend({}, this.params, {
+        var params = $.extend({}, {
           pageSize: this.pageSize,
           pageNumber: this.pageNumber + 1
-        }, this.options.params)
+        }, this.params)
         if (this.searchContent) {
-          params[this._options.searchKey] = this.searchContent
+          params[this.searchKey] = this.searchContent
         }
         this.loading = true
-        Utils.post(this._options.url, params).then((res) => {
-          this._options.afterAjax && this._options.afterAjax(res)
-          var root = this._options.root
-          var totalRoot = this._options.totalRoot
+        Utils.post(this.url, params).then((res) => {
+          this.afterAjax && this.afterAjax(res)
+          var root = this.root
+          var totalRoot = this.totalRoot
           var rows = this._pickData(res, root)
           this.total = this._pickData(res, totalRoot)
           if (rows.length > 0) {
@@ -160,7 +232,7 @@
               this.hoverItem = this.rows[0]
               this._rowHover(this.rows[0])
             }
-          }else if(this.rows.length>9){
+          } else if (this.rows.length > 9) {
             this.noMore = true
           }
           this.loading = false
@@ -169,10 +241,10 @@
         })
       },
       _rowShow(row){
-        if (this._options.rowRender) {
-          return this._options.rowRender(row)
+        if (this.rowRender) {
+          return this.rowRender(row)
         } else {
-          return row[this._options.displayMember]
+          return row[this.displayMember]
         }
       },
       _pickData(data, root){
@@ -190,10 +262,13 @@
         this.current = row
         this.hoverItem = row
         this.expand = false
-        this._options.afterSelect && this._options.afterSelect(row)
+        this.afterSelect && this.afterSelect(row)
+        this.$emit('on-select', this.current)
       },
       _inputFocus(){
+        fireEvent(document, 'click')
         this.expand = true
+
         if (this.current && this.current._index !== undefined) {
           this.$nextTick(function () {
             this._arrowScrollTop(this.current._index)
@@ -212,7 +287,7 @@
       _rowHover(row){
         this.hoverItem = row
         this.rows.forEach((item, index) => {
-          if (item[this._options.valueMember] == row[this._options.valueMember]) {
+          if (item[this.valueMember] == row[this.valueMember]) {
             item._selected = true
           } else {
             item._selected = false
@@ -225,7 +300,7 @@
       _hoverPrevItem(){
         var prevItem = null
         this.rows.forEach((item, index) => {
-          if (item[this._options.valueMember] == this.hoverItem[this._options.valueMember] && index > 0) {
+          if (item[this.valueMember] == this.hoverItem[this.valueMember] && index > 0) {
             let prevIndex = index - 1
             prevItem = this.rows[prevIndex]
             this._arrowScrollTop(prevIndex)
@@ -240,7 +315,7 @@
       _hoverNextItem(){
         var nextItem = null
         this.rows.forEach((item, index) => {
-          if (item[this._options.valueMember] == this.hoverItem[this._options.valueMember] && index < this.rows.length) {
+          if (item[this.valueMember] == this.hoverItem[this.valueMember] && index < this.rows.length) {
             let nextIndex = index + 1
             nextItem = this.rows[nextIndex]
             this._arrowScrollTop(nextIndex)
@@ -285,16 +360,34 @@
         }
         this.expand = false
         this.current = this.hoverItem
-        this._options.afterSelect && this._options.afterSelect(this.hoverItem)
+        this.afterSelect && this.afterSelect(this.hoverItem)
+        this.$emit('on-select', this.current)
         $(this.$el).find('input').focus()
       }
     }
   }
+
+  var fireEvent = function (element, event) {
+    if (document.createEventObject) {
+      // IE浏览器支持fireEvent方法
+      var evt = document.createEventObject();
+      return element.fireEvent('on' + event, evt)
+    }
+    else {
+      // 其他标准浏览器使用dispatchEvent方法
+      var evt = document.createEvent('HTMLEvents');
+      // initEvent接受3个参数：
+      // 事件类型，是否冒泡，是否阻止浏览器的默认行为
+      evt.initEvent(event, true, true);
+      return !element.dispatchEvent(evt);
+    }
+  };
 </script>
 <style scoped>
   .lazy-input-container {
     position: relative;
   }
+
   .lazy-input-list {
     border: 1px solid #d8dcf0;
     border-top: 0px;
@@ -305,27 +398,32 @@
     background-color: #fff;
     z-index: 99999;
   }
+
   .lazy-input-list > div:focus {
     outline: none;
   }
+
   .list-item {
     height: 28px;
     line-height: 28px;
     padding-left: 4px;
     cursor: default;
   }
+
   .selected {
     background-color: #d3eafd;
   }
+
   .lazy-input-loading {
     color: #666;
     width: 16px;
     height: 16px;
     background: url(data:image/gif;base64,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) no-repeat;
   }
-  .no-more{
+
+  .no-more {
     color: #ccc;
-    padding-left:4px;
+    padding-left: 4px;
     text-align: center;
   }
 </style>
