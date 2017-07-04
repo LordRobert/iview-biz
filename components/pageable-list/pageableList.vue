@@ -15,7 +15,7 @@
     </div>
   </div>
 </template>
-<script>
+<script type="text/ecmascript-6">
   /**
    *
    * @options
@@ -70,8 +70,11 @@
         }, this.options.params)).then((res) => {
           this.isLoading = false
           this.total = res.datas.totalSize
-          this.options.listData = res.datas.rows
-          this.$emit('on-after-ajax', res.datas)
+          this.$emit('on-after-ajax', res.datas.rows)
+
+          this.$nextTick(function () {
+            this.options.listData = res.datas.rows
+          })
         })
       },
 
