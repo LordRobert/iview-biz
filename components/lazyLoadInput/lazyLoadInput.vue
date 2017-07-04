@@ -4,6 +4,9 @@
        , @mouseleave="_mouseLeave" @keydown.enter="_enter">
     <input type="text" class="ivu-input" :placeholder="placeholder" @click="_inputFocus"
            v-model="searchContent" debounce="300" @keydown="keydown" :disabled="disabled"/>
+    <div v-if="showClear">
+      <i class="lazy-input-close-icon ivu-icon ivu-icon-ios-close" @click="clear"></i>
+    </div>
     <div class="lazy-input-list" v-if="expand">
       <div class="lazy-input-loading" v-if="loading && rows.length == 0"></div>
       <div class="lazy-input-empty" v-if="!loading && rows.length == 0">暂无数据</div>
@@ -23,9 +26,10 @@
   var PAGE_SIZE = 9
 
   /***
+   * --options
    * @property {String} url 请求数据url
-   * @property {String} value 值
-   * @property {String} valueDisplay 显示值
+   * @property {String} value.sync 值
+   * @property {String} valueDisplay.sync 显示值
    * @property {String} [displayMember=name] displayMember
    * @property {String} [valueMember=id] valueMember
    * @property {String} [params] params
@@ -37,11 +41,19 @@
    * @property {Function} [rowRender(row)] 自定义行渲染函数
    * @property {Function} [afterSelect(row)] 选中后执行的回调
    * @property {Function} [afterAjax(res)] ajax返回后执行的回调
+   *
+   * --methods
+   *
+   * reload() 手动刷新列表
+   *
+   * --events
+   *
+   * on-select  (current) 选择项时触发的事件
    */
   export default {
     props: {
-      url:{
-        type:String
+      url: {
+        type: String
       },
 
       root: {
@@ -94,8 +106,8 @@
         type: Function
       },
 
-      rowRender:{
-        type:Function
+      rowRender: {
+        type: Function
       },
 
       params: {
@@ -136,7 +148,26 @@
 
       this._load()
     },
+
+    computed: {
+      showClear: function () {
+        return this.value ? true : false
+      }
+    },
+
     watch: {
+      // 当参数改变时 重新请求
+      params: function () {
+        this.reload()
+      },
+
+      // 重新赋值时 同时改变current的值
+      value: function (newVal) {
+        this.current = {}
+        this.current[this.valueMember] = this.value
+        this.current[this.displayMember] = this.valueDisplay
+      },
+
       expand: function (newVal) {
         if (newVal) {
           if (this.hoverItem) {
@@ -152,37 +183,35 @@
       },
 
       current: function (newVal) {
-        this._searchContentChangeFromInner = true
         if (newVal) {
-          // 当current改变时，同时改变value和valueDisplay
-          this.searchContent = newVal[this.displayMember]
+          // 当current改变时，同时改变searchContent 如果current的改变来源于用户的搜索行为 则跳过
+          if (newVal[this.displayMember] != this.searchContent && !this._userSearchChange) {
+            this._searchContentChangeFromInner = true
+            this.searchContent = newVal[this.displayMember]
+          }
+
+          if(this._userSearchChange){
+            this._userSearchChange = false
+          }
+
           this.value = newVal[this.valueMember]
           this.valueDisplay = newVal[this.displayMember]
         }
       },
 
+
+      // 当searchContent的改变来自用户的搜索行为时，清空current的值（在reload方法里置value和valueDisplay为空）
       searchContent: function (newVal) {
+        // 选中选择项时 同时改变searchContent的值 此时非用户的搜索行为 直接return
         if (this._searchContentChangeFromInner) {
           this._searchContentChangeFromInner = false
           return
         }
 
-        if (!newVal) {
-          let emptyValue = {}
-
-          emptyValue[this.valueMember] = ''
-          emptyValue[this.displayMember] = ''
-
-          this.current = emptyValue
-          this.$emit('on-select', emptyValue)
-        }
-        this.index = 0
+        this._userSearchChange = true
         this.expand = true
-        this.noMore = false
-        this.pageNumber = 0
-        this.rows = []
-        this.hoverItem = null
-        this._load()
+        this._selectEventEmpty()
+        this.reload()
       }
     },
 
@@ -199,11 +228,34 @@
       setEnable(){
         this.disabled = false
       },
+
+      clear(){
+        this.$nextTick(function () {
+          this.reload()
+        })
+
+        this._selectEventEmpty()
+      },
+
+      _selectEventEmpty(){
+        this.$emit('on-select', null)
+      },
+
+      // reload的时候 列表已从头加载 所以清空当前的选中值
       reload(){
+        debugger
+        this.value = ''
+        this.valueDisplay = ''
+        this.index = 0
+        this.noMore = false
         this.pageNumber = 0
         this.rows = []
-        this._load()
+        this.hoverItem = null
+        this.$nextTick(function () {
+          this._load()
+        })
       },
+
       _load(){
         if (this.noMore) {
           return
@@ -425,5 +477,25 @@
     color: #ccc;
     padding-left: 4px;
     text-align: center;
+  }
+
+  .lazy-input-close-icon {
+    display: inline-block;
+    speak: none;
+    font-style: normal;
+    font-weight: 400;
+    font-variant: normal;
+    text-transform: none;
+    text-rendering: auto;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    margin-top: -7px;
+    font-size: 14px;
+    color: #9ea7b4;
+    transition: all .2s ease-in-out;
   }
 </style>
