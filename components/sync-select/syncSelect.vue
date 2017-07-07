@@ -90,9 +90,8 @@
         selected[this.displayMember] = this.valueDisplay
         selected[this.valueMember] = this.value
         this.items = [selected]
-      } else {
-        this.__fetchData()
       }
+      this.__fetchData()
     },
 
     data: function () {
