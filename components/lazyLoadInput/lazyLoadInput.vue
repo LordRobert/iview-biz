@@ -28,8 +28,8 @@
   /***
    * --options
    * @property {String} url 请求数据url
-   * @property {String} value.sync 值
-   * @property {String} valueDisplay.sync 显示值
+   * @property {String} value 值
+   * @property {String} valueDisplay 显示值
    * @property {String} [displayMember=name] displayMember
    * @property {String} [valueMember=id] valueMember
    * @property {String} [params] params
@@ -46,9 +46,10 @@
    *
    * reload() 手动刷新列表
    *
+   *
    * --events
    *
-   * on-select  (current) 选择项时触发的事件
+   * on-select 选择项时触发的事件
    */
   export default {
     props: {
@@ -128,7 +129,8 @@
         rows: [],
         current: {},
         searchContent: '',
-        noMore: false
+        noMore: false,
+        userSearchContent:''
       }
     },
     ready(){
@@ -208,6 +210,8 @@
           return
         }
 
+        // 只有用户真实搜索行为产生的searchContent 才作为接口的参数
+        this.userSearchContent = newVal
         this._userSearchChange = true
         this.expand = true
         this._selectEventEmpty()
@@ -243,7 +247,6 @@
 
       // reload的时候 列表已从头加载 所以清空当前的选中值
       reload(){
-        debugger
         this.value = ''
         this.valueDisplay = ''
         this.index = 0
@@ -265,7 +268,7 @@
           pageNumber: this.pageNumber + 1
         }, this.params)
         if (this.searchContent) {
-          params[this.searchKey] = this.searchContent
+          params[this.searchKey] = this.userSearchContent
         }
         this.loading = true
         Utils.post(this.url, params).then((res) => {
