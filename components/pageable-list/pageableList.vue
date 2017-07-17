@@ -1,15 +1,15 @@
 <template>
   <div>
-    <slot></slot>
-    <slot name="empty" v-if="options.listData.length == 0 && !isLoading && pageNumber === 1"></slot>
+    <slot :style="listStyles"></slot>
+    <slot name="empty" v-if="listData.length == 0 && !isLoading && pageNumber === 1"></slot>
     <div v-else>
-      <div style="margin: 10px;overflow: hidden" v-if="options.pageable !== false">
+      <div style="margin: 10px;overflow: hidden" v-if="pageable !== false">
         <div style="float: right;">
           <Page :total="total" :current="pageNumber" @on-change="onChange"
-                @on-page-size-change="onPageSizeChange" :show-sizer="options.showSizer!==false"
-                :page-size="pageSize" :page-size-opts="options.pageSizeOpts || [10, 20, 30, 40]"
-                :show-elevator="options.showElevator!==false" :show-total="options.showTotal!==false"
-                :simple="options.simple"></Page>
+                @on-page-size-change="onPageSizeChange" :show-sizer="showSizer!==false"
+                :page-size="pageSize" :page-size-opts="pageSizeOpts || [10, 20, 30, 40]"
+                :show-elevator="showElevator!==false" :show-total="showTotal!==false"
+                :simple="simple"></Page>
         </div>
       </div>
     </div>
@@ -18,13 +18,10 @@
 <script type="text/ecmascript-6">
   /**
    *
-   * @options
-   *    tableData 表格数据
-   *    tableColumns 表格meata
+   *    listData 表格数据
    *    pageable 是否有分页
    *    url 请求数据url
    *    pageSizeOpts 每页条数切换的配置
-   *    headerHeight 设置header高度
    *    showElevator 是否显示跳转至 默认显示
    *    showTotal 是否显示总条数
    *    showSizer 是否展示分页条数
@@ -43,7 +40,71 @@
   export default {
     mock: mockData(),
 
-    props: {options: Object},
+    props: {
+      manualLoadData: {
+        type: Boolean,
+        default: false
+      },
+
+      url:String,
+
+      params:{
+        type:Object,
+        default:function () {
+          return {}
+        }
+      },
+
+      listData:{
+        twoWay:true,
+        type:Array,
+        default:function () {
+          return []
+        }
+      },
+
+      pageable:{
+        type:Boolean,
+        default:true
+      },
+
+      showSizer:{
+        type:Boolean,
+        default:true
+      },
+
+      pageSizeOpts:{
+        type:Boolean,
+      },
+
+      showElevator:{
+        type:Boolean,
+        default:true
+      },
+
+      simple:{
+        type:Boolean,
+        default:true
+      },
+
+      showTotal:{
+        type:Boolean,
+        default:true
+      },
+
+      listHeight:{
+        type:String,
+        default:'auto'
+      }
+    },
+
+    computed:{
+      listStyles:function () {
+        return {
+          'height':this.listHeight
+        }
+      }
+    },
 
     data: function () {
       return {
@@ -56,7 +117,7 @@
 
     ready(){
       this.$emit('on-ready')
-      if (this.options.url && this.options.manualLoadData !== true) {
+      if (this.url && this.manualLoadData !== true) {
         this._reload()
       }
     },
@@ -64,16 +125,16 @@
     methods: {
       _reload(){
         this.isLoading = true
-        Utils.post(this.options.url, Object.assign({
+        Utils.post(this.url, Object.assign({
           pageSize: this.pageSize,
           pageNumber: this.pageNumber
-        }, this.options.params)).then((res) => {
+        }, this.params)).then((res) => {
           this.isLoading = false
           this.total = res.datas.totalSize
           this.$emit('on-after-ajax', res.datas.rows)
 
           this.$nextTick(function () {
-            this.options.listData = res.datas.rows
+            this.listData = res.datas.rows
           })
         })
       },
@@ -90,7 +151,7 @@
       onChange(pageNumber){
         this.pageNumber = pageNumber
         this.$emit('on-page-change')
-        if (this.options.url) {
+        if (this.url) {
           this._reload()
         }
       },
@@ -98,7 +159,7 @@
       onPageSizeChange(pageSize){
         this.$emit('on-page-size-change')
         this.pageSize = pageSize
-        if (this.options.url) {
+        if (this.url) {
           this._reload()
         }
       }
@@ -106,8 +167,6 @@
   }
 
   function mockData() {
-    return {
-
-    }
+    return {}
   }
 </script>
