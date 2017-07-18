@@ -9,179 +9,7 @@
                      list-height="220px"
                      @on-after-ajax="afterAjax" v-ref:pageable-list>
         <div v-for="item in listData" class="left-item">
-          <Checkbox :checked<template>
-          <div>
-            <slot :style="listStyles"></slot>
-            <slot name="empty" v-if="listData.length == 0 && !isLoading && pageNumber === 1"></slot>
-            <div v-else>
-              <div style="margin: 10px;overflow: hidden" v-if="pageable !== false">
-                <div style="float: right;">
-                  <Page :total="total" :current="pageNumber" @on-change="onChange"
-                        @on-page-size-change="onPageSizeChange" :show-sizer="showSizer!==false"
-                        :page-size="pageSize" :page-size-opts="pageSizeOpts || [10, 20, 30, 40]"
-                        :show-elevator="showElevator!==false" :show-total="showTotal!==false"
-                        :simple="simple"></Page>
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
-          <script type="text/ecmascript-6">
-            /**
-             *
-             *    listData 表格数据
-             *    pageable 是否有分页
-             *    url 请求数据url
-             *    pageSizeOpts 每页条数切换的配置
-             *    showElevator 是否显示跳转至 默认显示
-             *    showTotal 是否显示总条数
-             *    showSizer 是否展示分页条数
-             *    simple 简洁版
-             *    manualLoadData 是否手动获取数据 此时表格初始化时不执行ajax获取数据
-             *
-             *
-             * @events
-             *    on-created vue created生命周期事件
-             *    on-after-ajax 当配置有url时  ajax返回后的事件
-             *    on-page-change 有分页时 切换分页时的事件
-             *    on-page-size-change 有分页时  切换每页展示条数时的事件
-             *    on-select 当配置有selection或singleSelection时 选中行的事件
-             *
-             */
-            export default {
-              mock: mockData(),
-
-              props: {
-                manualLoadData: {
-                  type: Boolean,
-                  default: false
-                },
-
-                url:String,
-
-                params:{
-                  type:Object,
-                  default:function () {
-                    return {}
-                  }
-                },
-
-                listData:{
-                  twoWay:true,
-                  type:Array,
-                  default:function () {
-                    return []
-                  }
-                },
-
-                pageable:{
-                  type:Boolean,
-                  default:true
-                },
-
-                showSizer:{
-                  type:Boolean,
-                  default:true
-                },
-
-                pageSizeOpts:{
-                  type:Boolean,
-                },
-
-                showElevator:{
-                  type:Boolean,
-                  default:true
-                },
-
-                simple:{
-                  type:Boolean,
-                  default:true
-                },
-
-                showTotal:{
-                  type:Boolean,
-                  default:true
-                },
-
-                listHeight:{
-                  type:String,
-                  default:'auto'
-                }
-              },
-
-              computed:{
-                listStyles:function () {
-                  return {
-                    'height':this.listHeight
-                  }
-                }
-              },
-
-              data: function () {
-                return {
-                  total: 0,
-                  pageSize: 10,
-                  pageNumber: 1,
-                  isLoading: true
-                }
-              },
-
-              ready(){
-                this.$emit('on-ready')
-                if (this.url && this.manualLoadData !== true) {
-                  this._reload()
-                }
-              },
-
-              methods: {
-                _reload(){
-                  this.isLoading = true
-                  Utils.post(this.url, Object.assign({
-                    pageSize: this.pageSize,
-                    pageNumber: this.pageNumber
-                  }, this.params)).then((res) => {
-                    this.isLoading = false
-                    this.total = res.datas.totalSize
-                    this.$emit('on-after-ajax', res.datas.rows)
-
-                    this.$nextTick(function () {
-                      this.listData = res.datas.rows
-                    })
-                  })
-                },
-
-                reload(){
-                  this._reload()
-                },
-
-                reloadFirstPage(){
-                  this.pageNumber = 1
-                  this.reload()
-                },
-
-                onChange(pageNumber){
-                  this.pageNumber = pageNumber
-                  this.$emit('on-page-change')
-                  if (this.url) {
-                    this._reload()
-                  }
-                },
-
-                onPageSizeChange(pageSize){
-                  this.$emit('on-page-size-change')
-                  this.pageSize = pageSize
-                  if (this.url) {
-                    this._reload()
-                  }
-                }
-              }
-            }
-
-            function mockData() {
-              return {}
-            }
-          </script>
-          .sync="item._selected" @on-change="change(item)"></Checkbox>
+          <Checkbox :checked.sync="item._selected" @on-change="change(item)"></Checkbox>
           <span>
             {{{realRenderLeft(item)}}}
           </span>
@@ -205,7 +33,7 @@
 <script>
   export default {
     props: {
-      url:String,
+      url: String,
 
       selectedList: {
         type: Object,
@@ -315,7 +143,7 @@
 
         var leftRow = this._findLeftRowById(id)
 
-        if(leftRow){
+        if (leftRow) {
           leftRow._selected = false
         }
       },
@@ -370,7 +198,7 @@
       },
 
       _deleteRightRowById(id){
-        var index = this.selectedList.findIndex( (item) => {
+        var index = this.selectedList.findIndex((item) => {
           return item[this.key] == id
         })
 
@@ -402,7 +230,7 @@
 
     .select-all {
       position: absolute;
-      bottom: 12px;
+      bottom: 18px;
     }
   }
 
@@ -416,7 +244,7 @@
     height: 325px;
     border-left: 1px solid #D8DCF0;
 
-    .selected-item{
+    .selected-item {
       position: relative;
     }
 
@@ -451,7 +279,6 @@
       height: 270px;
       overflow: auto;
     }
-
 
   }
 </style>
