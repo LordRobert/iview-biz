@@ -21,6 +21,7 @@
    *    tableColumns 表格meata
    *    pageable 是否有分页
    *    url 请求数据url
+   *    params 请求参数
    *    pageSizeOpts 每页条数切换的配置
    *    headerHeight 设置header高度
    *    showElevator 是否显示跳转至 默认显示
