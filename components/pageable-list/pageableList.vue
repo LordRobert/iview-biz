@@ -1,6 +1,8 @@
 <template>
   <div>
-    <slot :style="listStyles"></slot>
+    <div :style="listStyles">
+      <slot></slot>
+    </div>
     <slot name="empty" v-if="listData.length == 0 && !isLoading && pageNumber === 1"></slot>
     <div v-else>
       <div style="margin: 10px;overflow: hidden" v-if="pageable !== false">
@@ -27,6 +29,7 @@
    *    showSizer 是否展示分页条数
    *    simple 简洁版
    *    manualLoadData 是否手动获取数据 此时表格初始化时不执行ajax获取数据
+   *    listHeight 列表区域固定高度
    *
    *
    * @events
@@ -46,62 +49,72 @@
         default: false
       },
 
-      url:String,
+      url: String,
 
-      params:{
-        type:Object,
-        default:function () {
+      params: {
+        type: Object,
+        default: function () {
           return {}
         }
       },
 
-      listData:{
-        twoWay:true,
-        type:Array,
-        default:function () {
+      listData: {
+        twoWay: true,
+        type: Array,
+        default: function () {
           return []
         }
       },
 
-      pageable:{
-        type:Boolean,
-        default:true
+      pageable: {
+        type: Boolean,
+        default: true
       },
 
-      showSizer:{
-        type:Boolean,
-        default:true
+      showSizer: {
+        type: Boolean,
+        default: true
       },
 
-      pageSizeOpts:{
-        type:Boolean,
+      pageSizeOpts: {
+        type: Boolean,
       },
 
-      showElevator:{
-        type:Boolean,
-        default:true
+      showElevator: {
+        type: Boolean,
+        default: true
       },
 
-      simple:{
-        type:Boolean,
-        default:true
+      simple: {
+        type: Boolean,
+        default: true
       },
 
-      showTotal:{
-        type:Boolean,
-        default:true
+      showTotal: {
+        type: Boolean,
+        default: true
       },
 
-      listHeight:{
-        type:String,
-        default:'auto'
+      listHeight: {
+        type: String,
+        default: 'auto'
+      },
+
+      isEmpty:{
+        twoWay:true,
+        type:Boolean,
+        default:false
       }
     },
 
-    computed:{
-      listStyles:function () {
-        return {
-          'height':this.listHeight
+    computed: {
+      listStyles: function () {
+        if (this.listData.length == 0 && !this.isLoading && this.pageNumber === 1) {
+          return
+        } else {
+          return {
+            'height': this.listHeight
+          }
         }
       }
     },
@@ -161,6 +174,14 @@
         this.pageSize = pageSize
         if (this.url) {
           this._reload()
+        }
+      },
+
+      resetIsEmpty(){
+        if(this.listData.length == 0 && !this.isLoading && this.pageNumber === 1){
+          this.isEmpty = true
+        }else{
+          this.isEmpty = false
         }
       }
     }
