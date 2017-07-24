@@ -184,7 +184,7 @@
         this.listData.forEach((item) => {
           item._selected = status
 
-          var index = this.selectedList.findIndex((item2) => {
+          var index = _.findIndex(this.selectedList,(item2) => {
             return item[this.key] == item2[this.key]
           })
 
@@ -202,19 +202,19 @@
       },
 
       _findLeftRowById(id){
-        return this.listData.find((item) => {
+        return _.find(this.listData, (item) => {
           return item[this.key] == id
         })
       },
 
       _findRightRowById(id){
-        return this.selectedList.find((item) => {
+        return _.find(this.selectedList, (item) => {
           return item[this.key] == id
         })
       },
 
       _deleteRightRowById(id){
-        var index = this.selectedList.findIndex((item) => {
+        var index = _.findIndex(this.selectedList,(item) => {
           return item[this.key] == id
         })
 
