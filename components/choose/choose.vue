@@ -7,18 +7,20 @@
       </div>
       <pageable-list :url="url" :list-data.sync="listData" :params="requestParams"
                      list-height="220px"
+                     :is-empty.sync="listEmpty"
                      @on-after-ajax="afterAjax" v-ref:pageable-list>
         <div v-for="item in listData" class="left-item">
-          <Checkbox :checked.sync="item._selected" @on-change="change(item)"></Checkbox>
-          <span>
+          <Checkbox :checked.sync="item._selected" @on-change="change(item)">
+          </Checkbox>
+          <div class="item-label">
             {{{realRenderLeft(item)}}}
-          </span>
+          </div>
         </div>
         <div slot="empty" style="text-align: center; margin-top: 32px;">
           暂无数据
         </div>
       </pageable-list>
-      <Checkbox :checked="selectAllStatus" class="select-all" @on-change="selectAll">全选</Checkbox>
+      <Checkbox :checked="selectAllStatus" class="select-all" @on-change="selectAll" v-if="listData.length > 0">全选</Checkbox>
     </div>
     <div class="right-container">
       <div class="selected-tip">已选中{{selectedList.length}}</div>
@@ -31,12 +33,25 @@
   </div>
 </template>
 <script>
+  /***
+   *
+   * @options
+   *
+   * url 左侧请求url
+   *
+   *
+   * @methods
+   *
+   * getSelected 获取右侧选中结果
+   */
+
+
   export default {
     props: {
       url: String,
 
       selectedList: {
-        type: Object,
+        type: Array,
         default: function () {
           return []
         }
@@ -58,7 +73,7 @@
       },
 
       params: {
-        type: String,
+        type: Object,
         default: function () {
           return {}
         }
@@ -77,11 +92,12 @@
     data () {
       return {
         listData: [],
-        keyword: ''
+        keyword: '',
+        listEmpty:false
       }
     },
 
-    mounted(){
+    attached(){
       this.$compile(this.$el)
     },
 
@@ -210,6 +226,7 @@
 <style scoped lang="less" rel="stylesheet/less">
   .main {
     border: 1px solid #D8DCF0;
+    user-select: none;
   }
 
   .left-container {
@@ -222,6 +239,13 @@
 
     .left-item {
       padding: 2px 0;
+      padding-bottom: 3px;
+
+      .item-label{
+        display: inline-block;
+        width: calc(~"100% - 26px");
+        vertical-align: bottom;
+      }
     }
 
     .search-wrap {
@@ -235,7 +259,7 @@
   }
 
   .right-container {
-    padding: 16px 16px 16px 32px;
+    padding: 16px 0 16px 32px;
     display: inline-block;
     width: calc(~"100% - 50% - 4px");
     vertical-align: top;
@@ -246,6 +270,7 @@
 
     .selected-item {
       position: relative;
+      padding:2px 0;
     }
 
     .selected-tip {
@@ -278,6 +303,7 @@
     .right-selected-wrap {
       height: 270px;
       overflow: auto;
+      padding-right: 16px;
     }
 
   }
