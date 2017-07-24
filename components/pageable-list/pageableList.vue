@@ -18,6 +18,8 @@
   </div>
 </template>
 <script type="text/ecmascript-6">
+
+  import DataAdapter from '../../utils/dataAdapter'
   /**
    *
    *    listData 表格数据
@@ -119,6 +121,12 @@
       }
     },
 
+    created(){
+      this.dataAdapter = new DataAdapter({
+        url:this.url
+      })
+    },
+
     data: function () {
       return {
         total: 0,
@@ -138,16 +146,14 @@
     methods: {
       _reload(){
         this.isLoading = true
-        Utils.post(this.url, Object.assign({
-          pageSize: this.pageSize,
-          pageNumber: this.pageNumber
-        }, this.params)).then((res) => {
+
+        this.dataAdapter.load(this.pageSize, this.pageNumber, this.params).then( (res) => {
           this.isLoading = false
-          this.total = res.datas.totalSize
-          this.$emit('on-after-ajax', res.datas.rows)
+          this.total = res.total
+          this.$emit('on-after-ajax', res.list)
 
           this.$nextTick(function () {
-            this.listData = res.datas.rows
+            this.listData = res.list
           })
         })
       },
