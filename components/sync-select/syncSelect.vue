@@ -1,9 +1,9 @@
 <template>
   <i-select :model.sync="value" query-mode="server1" @on-query="doQuery" :filterable="!disabled" clearable
-            v-ref:select :disabled="disabled">
+            v-ref:select :disabled="disabled" :placeholder="placeholder" :disabled="disabled">
     <i-option v-for="item in items" :value="item[valueMember]" @click="_select(item)">{{ item[displayMember] }}
     </i-option>
-    <div v-if="items.length == 0 && !loading">暂无数据</div>
+    <div v-if="items.length == 0 && !loading">{{{noDataText}}}</div>
     <div class="loading" v-if="loading"></div>
     <div slot="page" v-if="showPagination && pageable">
       <Page :total="totalSize" :page-size="pageSize" :current="current" size="small" @on-change="_changePage"
@@ -13,9 +13,26 @@
 </template>
 <script>
   /**
+   * @options
+   *
+   * valueMember 返回数据值属性名
+   * displayMember 返回数据显示值属性名
+   * url 请求数据url
+   * value.sync 值
+   * valueDisplay 显示值
+   * disabled 设置禁用状态
+   * searchKey 搜索时传递的关键字字段名称
+   * placeholder placeholder
+   * pageableSetting 返回数据中分页参数配置 {totalRoot, pageSizeRoot, pageNumberRoot, root}
+   * noDataText 没有数据提示文字
+   *
+   *
    * @example
    *  <sync-select url="/wec-devops-tenant/tenantApp/getAppListByTenant" display-member="appName" value-member="appId" :page-size="4" :value="value" :value-display="valueDisplay" :params="params"></sync-select>
    */
+
+  import DataAdapter from '../../utils/dataAdapter'
+
   export default {
     props: {
       url: String,
@@ -54,7 +71,24 @@
 
       valueDisplay: String,
 
-      params: Object
+      params: Object,
+
+      pageableSetting: {
+        type: Object,
+        default: function () {
+          return {}
+        }
+      },
+
+      noDataText: {
+        type: String,
+        default: '暂无数据'
+      },
+
+      placeholder: {
+        type: String,
+        default:'请选择'
+      },
     },
 
     computed: {
@@ -81,6 +115,16 @@
           this.__fetchData()
         }
       }
+    },
+
+    created(){
+      this.dataAdapter = new DataAdapter({
+        url: this.url,
+        totalRoot: this.pageableSetting.totalRoot || 'datas>totalSize',
+        pageSizeRoot: this.pageableSetting.pageSizeRoot || 'datas>pageSize',
+        pageNumberRoot: this.pageableSetting.pageNumberRoot || 'datas>pageNumber',
+        root: this.pageableSetting.root || 'datas>rows'
+      })
     },
 
     ready(){
@@ -114,12 +158,11 @@
         var searchContent = {}
         searchContent[this.searchKey] = this.searchContent
 
-        Utils.post(this.url, Object.assign({}, {
-          "pageSize": this.pageSize,
-          "pageNumber": this.current
-        }, this.params, searchContent)).then((res) => {
-          this.totalSize = res.datas.totalSize
-          this.items = res.datas.rows
+        var params = Object.assign({}, this.params, searchContent)
+
+        this.dataAdapter.load(this.pageSize, this.current, params).then( (res) => {
+          this.totalSize = res.total
+          this.items = res.list
         })
       },
 

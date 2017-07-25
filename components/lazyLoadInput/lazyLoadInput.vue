@@ -1,7 +1,6 @@
 <template>
   <div class="lazy-input-container" @keydown.40="_hoverNextItem" @keydown.38="_hoverPrevItem"
-       @mouseenter="_mouseEnter"
-       , @mouseleave="_mouseLeave" @keydown.enter="_enter">
+       @keydown.enter="_enter">
     <input type="text" class="ivu-input" :placeholder="placeholder" @click="_inputFocus"
            v-model="searchContent" debounce="300" @keydown="keydown" :disabled="disabled"/>
     <div v-if="showClear && !disabled">
@@ -9,14 +8,14 @@
     </div>
     <div class="lazy-input-list" v-if="expand">
       <div class="lazy-input-loading" v-if="loading && rows.length == 0"></div>
-      <div class="lazy-input-empty" v-if="!loading && rows.length == 0">暂无数据</div>
+      <div class="lazy-input-empty" v-if="!loading && rows.length == 0">{{noDataText}}</div>
       <div class="list-wrap" v-if="rows.length > 0">
         <div class="list-item lazy-input-index" @click="_select(item)" v-for="(index, item) in rows"
              tabindex="{{index}}"
              :class="{'selected':item._selected}"
              @mouseover="_rowHover(item)">{{_rowShow(item)}}
         </div>
-        <div v-if="noMore" class="no-more">没有更多了</div>
+        <div v-if="noMore" class="no-more">{{noMoreText}}</div>
       </div>
     </div>
   </div>
@@ -41,6 +40,8 @@
    * afterSelect(row) 选中后执行的回调
    * afterAjax(res) ajax返回后执行的回调
    * pageableSetting 返回数据中分页参数配置 {totalRoot, pageSizeRoot, pageNumberRoot, root}
+   * noMoreText 没有更多了提示文字
+   * noDataText 没有数据提示文字
    *
    * @methods
    *
@@ -120,6 +121,17 @@
           return {}
         }
       },
+
+      noMoreText: {
+        type: String,
+        default: '没有更多了'
+      },
+
+      noDataText: {
+        type: String,
+        default: '暂无数据'
+      },
+
       pageableSetting:{
         type:Object,
         default:function () {
@@ -407,18 +419,7 @@
           $(this.$el).find('.lazy-input-list').scrollTop(0)
         }
       },
-      /**
-       * 鼠标进入组件时，禁止窗口的滚动
-       */
-      _mouseEnter(){
-        document.body.style.overflowY = 'hidden'
-      },
-      /**
-       * 鼠标离开组件时，恢复窗口的滚动
-       */
-      _mouseLeave(){
-        document.body.style.overflowY = 'auto'
-      },
+
       /**
        * 悬浮记录后回车选中
        * 如果没有查询到结果 回车后"暂无数据"不消失

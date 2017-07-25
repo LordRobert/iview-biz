@@ -6,24 +6,26 @@
     <div v-if="rows.length > 0 && !loading">
       <div style="margin: 12px 0 12px;" v-show="loadMore.shown">
         <div style="text-align: center">
-          <a href="javascript:void(0);" @click="_loadMore" v-show="loadMore.hasMore">查看更多 &gt;</a>
-          <span v-show="!loadMore.hasMore">没有更多了...</span>
+          <a href="javascript:void(0);" @click="_loadMore" v-show="loadMore.hasMore">{{{moreText}}}</a>
+          <span v-show="!loadMore.hasMore">{{{noMoreText}}}</span>
         </div>
       </div>
     </div>
-    <slot name="empty">
+    <slot name="empty" v-if="rows.length == 0 && !loading">
 
     </slot>
   </div>
 </template>
-<script>
+<script type="application/ecmascript">
   /***
-   * @props
+   * @options
+   *
    * url 地址
    * rows.sync 列表数据
    * pageSize 页面大小
    * params 传入参数
-   *
+   * moreText 查看更多文本
+   * noMoreText 没有更多文本
    *
    * @events
    *
@@ -59,21 +61,54 @@
    </div>
    </lazy-load-list>
    */
+
+  import DataAdapter from '../../utils/dataAdapter'
+
   export default {
     props: {
-      'url': String,
-      'rows': {type: Array, twoWay: true},
-      'loading': {type: Boolean, twoWay: true, default: false},
+      'url': {
+        type:String
+      },
+
+      'rows': {
+        type: Array,
+        twoWay: true
+      },
+
+      'loading': {
+        type: Boolean,
+        twoWay: true,
+        default: false
+      },
+
       'pageSize': {
         type: Number,
         default: 10
       },
+
       'params': {
         type: Object,
         default: function () {
           return {}
         }
       },
+
+      moreText: {
+        type: String,
+        default: '查看更多 &gt;'
+      },
+
+      noMoreText: {
+        type: String,
+        default: '没有更多了...'
+      },
+
+      pageableSetting: {
+        type: Object,
+        default: function () {
+          return {}
+        }
+      }
     },
 
     data: function () {
@@ -90,6 +125,16 @@
       }
     },
 
+    created(){
+      this.dataAdapter = new DataAdapter({
+        url: this.url,
+        totalRoot: this.pageableSetting.totalRoot || 'datas>totalSize',
+        pageSizeRoot: this.pageableSetting.pageSizeRoot || 'datas>pageSize',
+        pageNumberRoot: this.pageableSetting.pageNumberRoot || 'datas>pageNumber',
+        root: this.pageableSetting.root || 'datas>rows'
+      })
+    },
+
     ready(){
       this._load().then(() => {
         this.$emit('ready')
@@ -98,30 +143,25 @@
 
     methods: {
       _load(isLoadMore){
-        var params = Object.assign({}, this.params, {
-          pageSize: this.pageSize,
-          pageNumber: this.pageNumber
-        }, this.userParams)
+        var params = Object.assign({}, this.params, this.userParams)
         this.loading = true
 
-        return Utils.post(this.url, params).then((res) => {
+        return this.dataAdapter.load(this.pageSize, this.pageNumber + 1, this.params).then((res) => {
+          this.loading = false
           this.pageSize = this.prevPageSize || this.pageSize
           this.pageNumber = this.prevPageNumber || this.pageNumber
           this.prevPageSize = null
           this.prevPageNumber = null
+          this.total = res.total
+          this.rows = isLoadMore ? this.rows.concat(res.list) : res.list
 
-          this.total = res.datas.totalSize
-          this.rows = isLoadMore ? this.rows.concat(res.datas.rows) : res.datas.rows
-          this.loading = false
-
-          this.loadMore.hasMore = this.rows.length < res.datas.totalSize
+          this.loadMore.hasMore = this.rows.length < res.total
 
           if (!this.loadMore.hasMore && this.pageNumber == 1) {
             this.loadMore.shown = false
           } else {
             this.loadMore.shown = true
           }
-
         }).catch(() => {
           this.loading = false
         })
