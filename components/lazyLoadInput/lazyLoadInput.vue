@@ -4,7 +4,7 @@
        , @mouseleave="_mouseLeave" @keydown.enter="_enter">
     <input type="text" class="ivu-input" :placeholder="placeholder" @click="_inputFocus"
            v-model="searchContent" debounce="300" @keydown="keydown" :disabled="disabled"/>
-    <div v-if="showClear">
+    <div v-if="showClear && !disabled">
       <i class="lazy-input-close-icon ivu-icon ivu-icon-ios-close" @click="clear"></i>
     </div>
     <div class="lazy-input-list" v-if="expand">
@@ -26,31 +26,44 @@
   var PAGE_SIZE = 9
 
   /***
-   * --options
-   * @property {String} url 请求数据url
-   * @property {String} value 值
-   * @property {String} valueDisplay 显示值
-   * @property {String} [displayMember=name] displayMember
-   * @property {String} [valueMember=id] valueMember
-   * @property {String} [params] params
-   * @property {String} [disabled] 设置禁用状态
-   * @property {String} [searchKey] 搜索时传递的关键字字段名称
-   * @property {String} [placeholder] placeholder
-   * @property {String} [root=datas>rows] root
-   * @property {String} [totalRoot=datas>totalSize] totalRoot
-   * @property {Function} [rowRender(row)] 自定义行渲染函数
-   * @property {Function} [afterSelect(row)] 选中后执行的回调
-   * @property {Function} [afterAjax(res)] ajax返回后执行的回调
+   * @options
    *
-   * --methods
+   * params 请求参数
+   * valueMember 返回数据值属性名
+   * displayMember 返回数据显示值属性名
+   * url 请求数据url
+   * value.sync 值
+   * valueDisplay 显示值
+   * disabled 设置禁用状态
+   * searchKey 搜索时传递的关键字字段名称
+   * placeholder placeholder
+   * rowRender(row) 自定义行渲染函数
+   * afterSelect(row) 选中后执行的回调
+   * afterAjax(res) ajax返回后执行的回调
+   * pageableSetting 返回数据中分页参数配置 {totalRoot, pageSizeRoot, pageNumberRoot, root}
+   *
+   * @methods
    *
    * reload() 手动刷新列表
    *
    *
-   * --events
+   * @events
    *
    * on-select 选择项时触发的事件
+   *
+   * @example
+   *
+   * <lazy-load-input v-ref:school :url="options.api.schoolApi"
+       :value.sync="options.model.dictSchoolWid"
+       :value-display.sync="options.model.schoolName"
+       :params="{queryopt:''}"
+       search-key="queryopt"
+       :disabled="options.type == 'edit'"
+       placeholder="请选择租户" :after-select="afterSelect"></lazy-load-input>
    */
+
+  import DataAdapter from '../../utils/dataAdapter'
+
   export default {
     props: {
       url: {
@@ -133,6 +146,17 @@
         userSearchContent:''
       }
     },
+
+    created(){
+      this.dataAdapter = new DataAdapter({
+        url:this.url,
+        totalRoot:this.options.pageableSetting.totalRoot || 'datas>totalSize',
+        pageSizeRoot:this.options.pageableSetting.pageSizeRoot || 'datas>pageSize',
+        pageNumberRoot:this.options.pageableSetting.pageNumberRoot || 'datas>pageNumber',
+        root:this.options.pageableSetting.root || 'datas>rows'
+      })
+    },
+
     ready(){
       this.index = 0
       $(document).on('click', (event) => {
@@ -263,20 +287,16 @@
         if (this.noMore) {
           return
         }
-        var params = $.extend({}, {
-          pageSize: this.pageSize,
-          pageNumber: this.pageNumber + 1
-        }, this.params)
+        var params = Object.assign({}, this.params)
         if (this.searchContent) {
           params[this.searchKey] = this.userSearchContent
         }
         this.loading = true
-        Utils.post(this.url, params).then((res) => {
+
+        this.dataAdapter.load(this.pageSize, this.pageNumber + 1, this.params).then( (res) => {
           this.afterAjax && this.afterAjax(res)
-          var root = this.root
-          var totalRoot = this.totalRoot
-          var rows = this._pickData(res, root)
-          this.total = this._pickData(res, totalRoot)
+          this.isLoading = false
+          var rows = res.list
           if (rows.length > 0) {
             rows.forEach((item) => {
               item._selected = false
@@ -290,7 +310,6 @@
           } else if (this.rows.length > 9) {
             this.noMore = true
           }
-          this.loading = false
         }).catch(() => {
           this.loading = false
         })

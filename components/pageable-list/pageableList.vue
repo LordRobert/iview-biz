@@ -22,6 +22,7 @@
   import DataAdapter from '../../utils/dataAdapter'
   /**
    *
+   * @options
    *    listData 表格数据
    *    pageable 是否有分页
    *    url 请求数据url
@@ -32,14 +33,27 @@
    *    simple 简洁版
    *    manualLoadData 是否手动获取数据 此时表格初始化时不执行ajax获取数据
    *    listHeight 列表区域固定高度
+   *    pageableSetting 返回数据中分页参数配置 {totalRoot, pageSizeRoot, pageNumberRoot, root}
    *
    *
    * @events
-   *    on-created vue created生命周期事件
    *    on-after-ajax 当配置有url时  ajax返回后的事件
    *    on-page-change 有分页时 切换分页时的事件
    *    on-page-size-change 有分页时  切换每页展示条数时的事件
-   *    on-select 当配置有selection或singleSelection时 选中行的事件
+   *
+   *  @example
+   *
+   *  <pageable-list :url="options.url" :simple="options.simple" :params="options.params" :list-data.sync="options.listData" style="margin-top: 16px;" v-ref:list  @on-after-ajax="afterAjax">
+         <div v-for="item in options.listData" @click="select(item)" class="list-item" :class="{'selected':item.selected}">
+         <Icon type="android-phone-portrait" :class="{'setted':item.schoolStatusMobile =='2'}"></Icon>
+         <Icon type="android-desktop" :class="{'setted':item.schoolStatus =='2'}"></Icon>
+         <span>{{item.schoolName}}</span>
+         <a class="del" @click="$emit('on-del', item)" href="javascript:void(0);">删除</a>
+         </div>
+         <div slot="empty">
+         没有租户信息
+         </div>
+      </pageable-list>
    *
    */
   export default {
@@ -106,6 +120,13 @@
         twoWay:true,
         type:Boolean,
         default:false
+      },
+
+      pageableSetting:{
+        type:Object,
+        default:function () {
+          return {}
+        }
       }
     },
 
@@ -123,7 +144,11 @@
 
     created(){
       this.dataAdapter = new DataAdapter({
-        url:this.url
+        url:this.url,
+        totalRoot:this.options.pageableSetting.totalRoot || 'datas>totalSize',
+        pageSizeRoot:this.options.pageableSetting.pageSizeRoot || 'datas>pageSize',
+        pageNumberRoot:this.options.pageableSetting.pageNumberRoot || 'datas>pageNumber',
+        root:this.options.pageableSetting.root || 'datas>rows'
       })
     },
 

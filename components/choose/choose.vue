@@ -43,6 +43,10 @@
    * @methods
    *
    * getSelected 获取右侧选中结果
+   *
+   * @example
+   *
+   * <choose :url="options.url" :render-left="renderLeft" :render-right="renderRight" v-ref:choose :selected-list="options.selectedList"></choose>
    */
 
   import pageableList from '../pageable-list/pageableList.vue'
