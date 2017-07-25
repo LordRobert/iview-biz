@@ -301,7 +301,7 @@
         }
         this.loading = true
 
-        this.dataAdapter.load(this.pageSize, this.pageNumber + 1, this.params).then( (res) => {
+        this.dataAdapter.load(this.pageSize, this.pageNumber + 1, params).then( (res) => {
           this.afterAjax && this.afterAjax(res)
           this.isLoading = false
           var rows = res.list
