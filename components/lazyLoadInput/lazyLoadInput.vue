@@ -70,16 +70,6 @@
         type: String
       },
 
-      root: {
-        type: String,
-        default: 'datas>rows'
-      },
-
-      totalRoot: {
-        type: String,
-        default: 'datas>totalSize'
-      },
-
       value: {
         type: String
       },
