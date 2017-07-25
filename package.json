@@ -1,6 +1,6 @@
 {
   "name": "iview-biz",
-  "version": "1.0.20",
+  "version": "1.0.22",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,3 +9,5 @@
   "author": "",
   "license": "ISC"
 }
+
+
