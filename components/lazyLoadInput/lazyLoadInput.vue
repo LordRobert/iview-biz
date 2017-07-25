@@ -129,6 +129,12 @@
         default: function () {
           return {}
         }
+      },
+      pageableSetting:{
+        type:Object,
+        default:function () {
+          return {}
+        }
       }
     },
     data: function () {
@@ -150,10 +156,10 @@
     created(){
       this.dataAdapter = new DataAdapter({
         url:this.url,
-        totalRoot:this.options.pageableSetting.totalRoot || 'datas>totalSize',
-        pageSizeRoot:this.options.pageableSetting.pageSizeRoot || 'datas>pageSize',
-        pageNumberRoot:this.options.pageableSetting.pageNumberRoot || 'datas>pageNumber',
-        root:this.options.pageableSetting.root || 'datas>rows'
+        totalRoot:this.pageableSetting.totalRoot || 'datas>totalSize',
+        pageSizeRoot:this.pageableSetting.pageSizeRoot || 'datas>pageSize',
+        pageNumberRoot:this.pageableSetting.pageNumberRoot || 'datas>pageNumber',
+        root:this.pageableSetting.root || 'datas>rows'
       })
     },
 
