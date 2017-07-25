@@ -45,6 +45,8 @@
    * getSelected 获取右侧选中结果
    */
 
+  import pageableList from '../pageable-list/pageableList.vue'
+
 
   export default {
     props: {
@@ -88,6 +90,8 @@
       }
 
     },
+
+    components:{pageableList},
 
     data () {
       return {
