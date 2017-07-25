@@ -60,7 +60,7 @@
        :params="{queryopt:''}"
        search-key="queryopt"
        :disabled="options.type == 'edit'"
-       placeholder="请选择租户" :after-select="afterSelect"></lazy-load-input>
+       placeholder="请选择租户" @on-select="select"></lazy-load-input>
    */
 
   import DataAdapter from '../../utils/dataAdapter'
