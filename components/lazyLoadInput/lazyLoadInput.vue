@@ -303,7 +303,7 @@
 
         this.dataAdapter.load(this.pageSize, this.pageNumber + 1, params).then( (res) => {
           this.afterAjax && this.afterAjax(res)
-          this.isLoading = false
+          this.loading = false
           var rows = res.list
           if (rows.length > 0) {
             rows.forEach((item) => {
