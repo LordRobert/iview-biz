@@ -38,7 +38,12 @@
    * @options
    *
    * url 左侧请求url
-   *
+   * selectedList 选中的记录
+   * key 主键属性名
+   * placeholder placeholder
+   * params 参数
+   * renderLeft(row) 左侧渲染函数
+   * renderRight(row) 右侧渲染函数
    *
    * @methods
    *
@@ -46,7 +51,7 @@
    *
    * @example
    *
-   * <choose :url="options.url" :render-left="renderLeft" :render-right="renderRight" v-ref:choose :selected-list="options.selectedList"></choose>
+   * <choose :url="options.url" :render-left="renderLeft" :render-right="renderRight" v-ref:choose :selected-list.sync="options.selectedList"></choose>
    */
 
   import pageableList from '../pageable-list/pageableList.vue'
