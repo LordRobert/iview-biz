@@ -13,7 +13,9 @@
         <div class="list-item lazy-input-index" @click="_select(item)" v-for="(index, item) in rows"
              tabindex="{{index}}"
              :class="{'selected':item._selected}"
-             @mouseover="_rowHover(item)">{{_rowShow(item)}}
+             @mouseover="_rowHover(item)"
+            :title="_rowShow(item)">
+          {{_rowShow(item)}}
         </div>
         <div v-if="noMore" class="no-more">{{noMoreText}}</div>
       </div>
@@ -479,6 +481,9 @@
     line-height: 28px;
     padding-left: 4px;
     cursor: default;
+    overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
   }
 
   .selected {
