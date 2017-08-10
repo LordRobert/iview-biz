@@ -146,7 +146,7 @@
         var params = Object.assign({}, this.params, this.userParams)
         this.loading = true
 
-        return this.dataAdapter.load(this.pageSize, this.pageNumber + 1, this.params).then((res) => {
+        return this.dataAdapter.load(this.pageSize, this.pageNumber, this.params).then((res) => {
           this.loading = false
           this.pageSize = this.prevPageSize || this.pageSize
           this.pageNumber = this.prevPageNumber || this.pageNumber
