@@ -2,8 +2,7 @@
   <div class="main">
     <div class="left-container">
       <div class="search-wrap">
-        <i-input :value.sync="keyword" :placeholder="placeholder" style="width: 100%" @keyup="search"
-                 debounce="500"></i-input>
+        <i-input :value.sync="keyword" :placeholder="placeholder" style="width: 100%" @keyup="search | debounce 500"></i-input>
       </div>
       <pageable-list :url="url" :list-data.sync="listData" :params="requestParams"
                      list-height="220px"
