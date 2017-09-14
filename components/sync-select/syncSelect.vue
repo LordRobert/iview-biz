@@ -1,6 +1,6 @@
 <template>
   <i-select :model.sync="value" query-mode="server1" @on-query="doQuery" :filterable="!disabled" clearable
-            v-ref:select :disabled="disabled" :placeholder="placeholder" :disabled="disabled">
+            v-ref:select :disabled="disabled" :placeholder="placeholder" :disabled="disabled" :label-in-value="labelInValue" @on-change="change">
     <i-option v-for="item in items" :value="item[valueMember]" @click="_select(item)">{{ item[displayMember] }}
     </i-option>
     <div v-if="items.length == 0 && !loading">{{{noDataText}}}</div>
@@ -25,6 +25,7 @@
    * placeholder placeholder
    * pageableSetting 返回数据中分页参数配置 {totalRoot, pageSizeRoot, pageNumberRoot, root}
    * noDataText 没有数据提示文字
+   * labelInValue 在返回选项时，是否将 label 和 value 一并返回，默认只返回 value
    *
    *
    * @example
@@ -89,6 +90,11 @@
         type: String,
         default:'请选择'
       },
+
+      labelInValue:{
+        type:Boolean,
+        default:false
+      }
     },
 
     computed: {
@@ -181,6 +187,10 @@
       _select(item){
         this.currentMember = item
         this.valueDisplay = item[this.displayMember]
+      },
+
+      change(val){
+        this.$emit('on-change', val)
       }
     }
   }
