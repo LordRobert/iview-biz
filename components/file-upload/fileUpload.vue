@@ -36,9 +36,11 @@
   </div>
 </template>
 <script>
-  import upload from 'statics/js/upload.js'
+  import upload from './upload.js'
+  import imageViewer from './imageViewer.vue'
 
   export default {
+    components:{imageViewer},
     props: {
       /**
        * 是否只读
