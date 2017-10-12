@@ -51,12 +51,25 @@
         default: false
       },
 
+
+      /**
+       * policyUrl接口传的参数
+       */
+      params:{
+        type:Object
+      },
+
       /**
        * 上传文件列表
        *
        * 例如：[{title:'', url:'http://kdlsfjslfjk'}]
        */
-      list: Array,
+      list: {
+        type:Array,
+        default:function () {
+          return []
+        }
+      },
 
       /**
        * 上传文件个数限制
@@ -216,7 +229,7 @@
           url: this.policyUrl,
           maxFileSize: this.maxFileSize,
           extensions:this.extensions,
-          params: {},
+          params: this.params || {},
           callbacks: {
             BeforeUpload:()=>{
               this.uploading = true
