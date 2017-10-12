@@ -1,3 +1,6 @@
+import bbb from './moxie.js'
+import aaa from './plupload.js'
+
 const init = function (options) {
   var url = options.url
   var params = options.params
