@@ -39,6 +39,11 @@
   import upload from './upload.js'
   import imageViewer from './imageViewer.vue'
 
+  var ossFileUrlSettingDefault = {
+    'filePathKey':'filePath',
+    'fullPathKey':'datas'
+  }
+
   export default {
     components:{imageViewer},
     props: {
@@ -154,13 +159,25 @@
       ossFileUrl:{
         type:String,
         default:''
-      }
+      },
 
+      /**
+       * ossFileUrl接口key值配置
+       * {
+       *    'filePathKey':'filePath',
+       *    'fullPathKey':'datas'
+       * }
+       *
+       */
+      ossFileUrlSetting:{
+        type:Object
+      }
     },
 
     data:function () {
       return {
-        uploading:false
+        uploading:false,
+        ossFileUrlSettingInner:{}
       }
     },
 
@@ -172,6 +189,13 @@
           })
         }
       },
+      ossFileUrlSetting(newVal){
+        this.ossFileUrlSettingInner = Object.assign({}, ossFileUrlSettingDefault,this.ossFileUrlSetting)
+      }
+    },
+
+    created(){
+      this.ossFileUrlSettingInner = Object.assign({}, ossFileUrlSettingDefault,this.ossFileUrlSetting)
     },
 
     computed: {
@@ -236,13 +260,15 @@
             },
             FileUploaded: (res)=> {
               this.uploading = false
-              Utils.post(this.ossFileUrl, {
-                fileName:res.filePath+'.'+res.ext
-              }).then((res2)=> {
+              var params = {}
+              params[this.ossFileUrlSettingInner.filePathKey] = res.filePath+'.'+res.ext
+              Utils.post(this.ossFileUrl, params).then((res2)=> {
                 this.list.push({
                   title: res.fileName,
-                  url: res2.datas,
-                  fileName: res.filePath + '.' + res.ext
+                  url: res2[this.ossFileUrlSettingInner.fullPathKey],
+                  fileName: res.filePath + '.' + res.ext,
+                  filePath:res.filePath,
+                  ext:res.ext,
                 })
                 this.$emit('file-uploaded', res)
               })
@@ -258,6 +284,18 @@
         this.uploader.files = []
       }
     }
+  }
+
+  function pickData(data, root){
+    var tempValue = data
+    var rootArray = root.split('>')
+    rootArray.forEach(function (item) {
+      if (!tempValue[item]) {
+        return false
+      }
+      tempValue = tempValue[item]
+    })
+    return tempValue
   }
 </script>
 <style scoped lang="less" rel="stylesheet/less">
