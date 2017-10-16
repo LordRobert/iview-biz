@@ -11,6 +11,7 @@
           <div>{{description}}</div>
         </div>
       </div>
+      <div v-if="readonly && list.length == 0" class="empty">{{emptyText}}</div>
       <div v-for="(index, item) in list" class="ivu-uploaded">
         <div class="opt-panel">
           <div class="viewer" @click="delFile(item)" v-if="!readonly">
@@ -112,6 +113,14 @@
       description:{
         type:String,
         default:''
+      },
+
+      /**
+       * 只读模式时 没有数据的提示消息
+       */
+      emptyText:{
+        type:String,
+        default:'咱无数据'
       },
 
       /**
@@ -384,5 +393,9 @@
     margin-left: 39px;
     margin-top: 10px;
     height: auto!important;
+  }
+
+  .empty{
+    color: #bbb;
   }
 </style>
