@@ -331,6 +331,7 @@
     border: 1px solid #d7dde4;
     position: relative;
     vertical-align: top;
+    border-radius: 4px;
 
     .opt-panel {
       padding: 24px;
@@ -339,7 +340,7 @@
       position: absolute;
       width: 100%;
       height: 100%;
-      background: rgba(100, 100, 100, 0.6);
+      background: rgba(100, 100, 100, 0.8);
 
       .viewer {
         height: 50px;
@@ -349,6 +350,7 @@
         cursor: pointer;
         width: 60px;
         display: inline-block;
+        font-weight: 700;
 
         &:hover {
           color: #fff;
