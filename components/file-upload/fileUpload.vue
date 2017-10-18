@@ -213,7 +213,6 @@
           return this.isImage(item.url)?item.url:''
         })
 
-        debugger
         return  res?_.compact(res):[]
       }
     },
