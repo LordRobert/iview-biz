@@ -50,7 +50,16 @@
    *
    * @example
    *
-   * <choose :url="options.url" :render-left="renderLeft" :render-right="renderRight" v-ref:choose :selected-list.sync="options.selectedList"></choose>
+   <choose
+        v-ref:choose
+        key="id"
+        searchKey="content"
+        :params="options.params"
+        :url="options.url"
+        :render-left="renderLeft"
+        :render-right="renderRight"
+        :selected-list.sync="options.selectedList">
+   </choose>
    */
 
   import pageableList from '../pageable-list/pageableList.vue'
