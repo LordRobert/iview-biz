@@ -37,6 +37,33 @@
   </div>
 </template>
 <script>
+  /**
+   *
+   * @example
+   *
+     <file-upload
+       :list.sync="options.model.attachZip"
+       title="上传附件"
+       :max="3"
+       description="仅支持20M以内的zip、pdf文件"
+       max-file-size="20mb"
+       extensions="zip,pdf"
+       policy-url="/wec-msg-mngt/msgmngt/getImportPolicy"
+       oss-file-url="/wec-msg-mngt/msgmngt/previewAttachment"
+       :oss-file-url-setting="{filePathKey:'ossKey'}"
+       :readonly="options.viewMode == 'view'"
+       :params="{fileType:2}"
+       empty-text="没有附件"
+       @file-uploaded="fileUploaded2" @on-del="fileDel2" style="width: 900px;">
+     </file-upload>
+   *
+   *
+   * @event
+   *
+   * file-uploaded  文件上传完成事件 参数：({fileName, filePath, ext})
+   * on-del 删除文件事件 参数 ({fileName, url...})
+   *
+   */
   import upload from './upload.js'
   import imageViewer from './imageViewer.vue'
 
@@ -156,7 +183,7 @@
       /**
        * 获取上传到oss后的文件可访问路径接口
        *
-       * 接口传参：fileName: "examinee/1018650047507463/attachimage/28/28_5e0adbe9410f4efebf3face066770f18.jpeg"
+       * 接口传参：filePath: "examinee/1018650047507463/attachimage/28/28_5e0adbe9410f4efebf3face066770f18.jpeg"
        *
        * 接口返回：
        *  {
