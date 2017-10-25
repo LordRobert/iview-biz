@@ -12,23 +12,25 @@
         </div>
       </div>
       <div v-if="readonly && list.length == 0" class="empty">{{emptyText}}</div>
-      <div v-for="(index, item) in list" class="ivu-uploaded">
-        <div class="opt-panel">
-          <div class="viewer" @click="delFile(item)" v-if="!readonly">
-            <Icon type="trash-a" size="24"></Icon>
-            <div>删除</div>
+      <div v-for="(index, item) in list" class="uploaded-wrap">
+        <div  class="ivu-uploaded">
+          <div class="opt-panel">
+            <div class="viewer" @click="delFile(item)" v-if="!readonly">
+              <Icon type="trash-a" size="24"></Icon>
+              <div>删除</div>
+            </div>
+            <div class="viewer" @click="showBig(index)" v-if="isImage(item.url)">
+              <Icon type="eye" size="24"></Icon>
+              <div>预览</div>
+            </div>
+            <div class="viewer" @click="download(item)">
+              <Icon type="ios-cloud-download-outline" size="24"></Icon>
+              <div>下载</div>
+            </div>
           </div>
-          <div class="viewer" @click="showBig(index)" v-if="isImage(item.url)">
-            <Icon type="eye" size="24"></Icon>
-            <div>预览</div>
-          </div>
-          <div class="viewer" @click="download(item)">
-            <Icon type="ios-cloud-download-outline" size="24"></Icon>
-            <div>下载</div>
-          </div>
+          <img :src="item.url" alt="" v-if="isImage(item.url)">
+          <img class='file-img' v-else src="data:image/png;base64,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" alt="" >
         </div>
-        <img :src="item.url" alt="" v-if="isImage(item.url)">
-        <img class='file-img' v-else src="data:image/png;base64,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" alt="" >
         <div class="title" :title="item.title">{{item.title}}</div>
       </div>
     </div>
@@ -289,6 +291,7 @@
           maxFileSize: this.maxFileSize,
           extensions:this.extensions,
           params: this.params || {},
+          preventDuplicates:false,
           callbacks: {
             BeforeUpload:()=>{
               this.uploading = true
@@ -349,14 +352,26 @@
     }
   }
 
-  .ivu-uploaded {
+  .uploaded-wrap{
+    margin-left: 16px;
+    vertical-align: top;
     display: inline-block;
+
+    .title {
+      width: 100%;
+      text-align: center;
+      overflow: hidden;
+      height:32px;
+      overflow: hidden;
+      text-align: center;
+    }
+  }
+
+  .ivu-uploaded {
     width: 180px;
     height: 150px;
-    margin-left: 16px;
     border: 1px solid #d7dde4;
     position: relative;
-    vertical-align: top;
     border-radius: 4px;
 
     .opt-panel {
@@ -391,16 +406,6 @@
     img {
       width: 100%;
       height: 100%;
-    }
-
-    .title {
-      bottom: -30px;
-      width: 100%;
-      text-align: center;
-      position: absolute;
-      overflow: hidden;
-      height:32px;
-      overflow: hidden;
     }
 
     .del {

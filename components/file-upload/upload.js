@@ -138,7 +138,7 @@ const init = function (options) {
       ],
 
       max_file_size: maxFileSize, //最大只能上传10mb的文件
-      prevent_duplicates: true //不允许选取重复文件
+      prevent_duplicates: options.preventDuplicates //不允许选取重复文件
     },
 
     init: {
